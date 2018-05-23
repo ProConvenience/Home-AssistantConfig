@@ -1,0 +1,742 @@
+  - id: on_hass_startup
+    alias: 'On HA startup ...'
+    trigger:
+      platform: homeassistant
+      # Event can also be 'shutdown'
+      event: start
+    action:
+      - service: input_select.select_option
+        data_template:
+          entity_id: input_select.gabe_status_dropdown
+          option: >
+            {% if states.group.gabe.state == 'home' %}
+              Home
+            {% else %}
+              Away
+            {% endif %}
+      - service: input_select.select_option
+        data_template:
+          entity_id: input_select.tash_status_dropdown
+          option: >
+            {% if states.group.tash.state == 'home' %}
+              Home
+            {% else %}
+              Away
+            {% endif %}
+      - service: input_select.select_option
+        data_template:
+          entity_id: input_select.daniel_status_dropdown
+          option: >
+            {% if states.group.daniel.state == 'home' %}
+              Home
+            {% else %}
+              Away
+            {% endif %}
+      - service: input_select.select_option
+        data_template:
+          entity_id: input_select.nata_status_dropdown
+          option: >
+            {% if states.group.nata.state == 'home' %}
+              Home
+            {% else %}
+              Away
+            {% endif %}
+      - service: input_select.select_option
+        data_template:
+          entity_id: input_select.miriam_status_dropdown
+          option: >
+            {% if states.group.miriam.state == 'home' %}
+              Home
+            {% else %}
+              Away
+            {% endif %}
+
+  - id: auto_renew_ssl_cert
+    alias: 'Auto Renew SSL Cert'
+    trigger:
+      platform: numeric_state
+      entity_id: sensor.ssl_cert_expiry
+      below: 29
+    action:
+      service: shell_command.renew_ssl
+  # https://community.home-assistant.io/t/both-arrive-home/8935/3
+  - id: ssl_expiry_notification
+    alias: 'SSL expiry notification'
+    trigger:
+      platform: numeric_state
+      entity_id: sensor.ssl_cert_expiry
+      below: 21
+    action:
+      # service: notify.mailgun
+      service: notify.pushbullet
+      data:
+        message: 'Warning - SSL certificate expires in 21 days and has not been automatically renewed'
+
+  - id: door_opened_closed
+    alias: 'Door open/closed'
+    hide_entity: False
+    trigger:
+      # these two can't be combined into one item with above & below, just doesn't work :/ 2017-12-29
+      - platform: numeric_state
+        entity_id: sensor.front_door_sensor_access_control
+        below: 23
+      # - platform: numeric_state
+        # entity_id: sensor.front_door_sensor_access_control
+        # above: 22
+    action:
+      - service: switch.turn_on
+        entity_id: switch.foyer_switch
+      - service: timer.start
+        entity_id: timer.door_recently_open_timer
+      # - service: input_boolean.turn_on
+        # entity_id: input_boolean.door_recently_open
+      # - service_template: switch.turn_{% set sensor_state = states.sensor.front_door_sensor_access_control.state %}{% if sensor_state == '22' %}on{% elif sensor_state == '23' %}off{% endif %}
+        # entity_id: switch.foyer_switch
+
+  # morning notification
+  - id: morning_notification_leaving_reminder
+    alias: 'Leaving reminder'
+    hide_entity: False
+    trigger:
+      # # these two can't be combined into one item with above & below, just doesn't work :/ 2017-12-29
+      # - platform: numeric_state
+        # entity_id: sensor.front_door_sensor_access_control
+        # below: 23
+      # # - platform: numeric_state
+        # # entity_id: sensor.front_door_sensor_access_control
+        # # above: 22
+      - platform: state
+        entity_id: sensor.foyer_burglar
+        from: '0'
+        to: '8'
+    condition:
+      condition: and
+      conditions:
+        - condition: template
+          value_template: "{{ states.input_text.leaving_reminder.state != '' }}"
+        # - condition: template
+          # value_template: "{{ states.sensor.foyer_burglar.state == '8' }}"
+        - condition: time
+          after: '07:30:00'
+          before: '08:30:00'
+    action:
+      - service: script.turn_on
+        entity_id: script.leaving_reminder
+      - service: timer.start
+        entity_id: timer.door_recently_open_timer
+
+  - id: door_recently_open_timer_finished
+    alias: 'Door recently open timer finished'
+    hide_entity: False
+    trigger:
+      - platform: event
+        event_type: timer.finished
+        event_data: 
+          entity_id: timer.door_recently_open_timer
+    action:
+      - service: switch.turn_off
+        entity_id: switch.foyer_switch
+      # - service: input_boolean.turn_off
+        # entity_id: input_boolean.door_recently_open
+
+  - id: foyer_light_off_cancel_timer
+    alias: 'Foyer light off (cancel timer)'
+    hide_entity: False
+    trigger:
+      - platform: state
+        entity_id: switch.foyer_switch
+        from: 'On'
+        to: 'Off'
+    action:
+      - service: timer.cancel
+        entity_id: timer.door_recently_open_timer
+
+
+
+  - id: foyer_senses_motion
+    alias: 'Foyer senses motion'
+    hide_entity: False
+    trigger:
+      - platform: numeric_state
+        entity_id: sensor.foyer_burglar
+        above: 7
+      - platform: state
+        entity_id: sensor.foyer_burglar
+        from: '0'
+        to: '8'
+    condition:
+      - condition: state
+        entity_id: switch.foyer_switch
+        state: 'off'
+    action:
+      - service: switch.turn_on
+        entity_id: switch.foyer_switch
+      - service: timer.start
+        entity_id: timer.door_recently_open_timer
+
+
+
+
+
+
+  - id: turn_on_kitchen_light_when_there_is_movement
+    alias: Turn on kitchen light when there is movement
+    hide_entity: False
+    trigger:
+      platform: state
+      # entity_id: sensor.foyer_burglar
+      # to: '8'
+      entity_id: sensor.occupancy_kitchen
+      to: 'true'
+    action:
+      service: homeassistant.turn_on
+      entity_id: switch.kitchen
+
+  - id: turn_off_kitchen_light_10_minutes_after_last_movement
+    alias: Turn off kitchen light 10 minutes after last movement
+    trigger:
+      platform: state
+      entity_id: sensor.occupancy_kitchen
+      to: 'false'
+      for:
+        minutes: 10
+    action:
+      service: homeassistant.turn_off
+      entity_id: switch.kitchen
+
+
+
+
+
+  - id: announce_arrival
+    alias: 'Announce arrival'
+    hide_entity: False
+    trigger:
+      - platform: state
+        entity_id: sensor.gabe_status
+        from: 'Away'
+        to: 'Just Arrived'
+      - platform: state
+        entity_id: sensor.tash_status
+        from: 'Away'
+        to: 'Just Arrived'
+      - platform: state
+        entity_id: sensor.daniel_status
+        from: 'Away'
+        to: 'Just Arrived'
+      - platform: state
+        entity_id: sensor.nata_status
+        from: 'Away'
+        to: 'Just Arrived'
+      - platform: state
+        entity_id: sensor.miriam_status
+        from: 'Away'
+        to: 'Just Arrived'
+    condition:
+      condition: state
+      entity_id: sensor.door_recently_open
+      state: 'true'
+    action:
+      - service: script.turn_on
+        entity_id: script.pushbullet_arrival
+        data_template:
+          variables:
+            var_trigger_entity_id: "{{ trigger.entity_id }}"
+      - delay: '00:00:05'
+      - service: script.turn_on
+        entity_id: script.googlehome_arrival
+        data_template:
+          variables:
+            var_trigger_entity_id: "{{ trigger.entity_id }}"
+  
+  - id: switch_on_gabes_lights_when_either_of_us_arrives_home
+    alias: 'Switch on Gabes lights when either of us arrives home'
+    hide_entity: False
+    trigger:
+      # - platform: state
+        # entity_id: group.gabe_and_tash
+        # from: 'not_home'
+        # to: 'home'
+      - platform: state
+        entity_id: sensor.gabe_status
+        from: 'Away'
+        to: 'Just Arrived'
+      - platform: state
+        entity_id: sensor.gabe_status
+        from: 'Extended Away'
+        to: 'Just Arrived'
+      - platform: state
+        entity_id: sensor.gabe_status
+        from: 'unknown'
+        to: 'Just Arrived'
+      - platform: state
+        entity_id: sensor.tash_status
+        from: 'Away'
+        to: 'Just Arrived'
+      - platform: state
+        entity_id: sensor.tash_status
+        from: 'Extended Away'
+        to: 'Just Arrived'
+      - platform: state
+        entity_id: sensor.tash_status
+        from: 'unknown'
+        to: 'Just Arrived'
+    condition:
+      condition: time
+      after: '10:00:00'
+      before: '21:45:00'
+    action:
+      - service: light.turn_on
+        entity_id: group.gabes_room
+    # data:
+      # rgb_color: [255, 255, 255]
+      # brightness: 254
+      # - delay:
+        # minutes: 3
+      # - service: light.turn_off
+      # entity_id:
+        # - light.dining_room_light
+        # - light.bedroom_light
+
+
+
+
+
+  - id: switch_off_gabes_lights_when_we_both_leave_home
+    alias: 'Switch off Gabes lights when we both leave home'
+    hide_entity: False
+    trigger:
+      # - platform: state
+        # entity_id: group.gabe_and_tash
+        # from: 'home'
+        # to: 'not_home'
+      - platform: state
+        entity_id: sensor.gabe_status
+        from: 'Just Left'
+        to: 'Away'
+      - platform: state
+        entity_id: sensor.tash_status
+        from: 'Just Left'
+        to: 'Away'
+    condition:
+      - condition: template
+        value_template: "{{ (is_state('sensor.gabe_status', 'Away') or is_state('sensor.gabe_status', 'Extended Away') or is_state('sensor.gabe_status', 'unknown'))     and     (is_state('sensor.tash_status', 'Away') or is_state('sensor.tash_status', 'Extended Away') or is_state('sensor.tash_status', 'unknown')) }}"
+      # - condition: template
+        # value_template: "{{  }}"
+      # - condition: state
+        # entity_id: sensor.gabe_status
+        # state: 'Away'
+      # - condition: state
+        # entity_id: sensor.tash_status
+        # state: 'Away'
+    action:
+      # - service: group.turn_off
+        # entity_id: group.gabes_room_all_lights
+      - service: light.turn_off
+        entity_id: group.gabes_room_all_lights
+      - service: switch.turn_off
+        entity_id: group.gabes_room_all_lights
+
+
+
+
+
+
+
+  - id: switch_off_gabes_lights_when_gabe_leaves_before_9am_and_tash_is_home
+    alias: 'Switch off Gabes lights when Gabe leaves before 9am and Tash is home'
+    hide_entity: False
+    trigger:
+      - platform: state
+        entity_id: sensor.gabe_status
+        from: 'Just Left'
+        to: 'Away'
+    condition:
+      condition: and
+      conditions:
+      - condition: time
+        after: '07:00:00'
+        before: '09:00:00'
+      - condition: state
+        entity_id: sensor.tash_status
+        state: 'Home'
+    action:
+      # - service: group.turn_off
+        # entity_id: group.gabes_room_all_lights
+      - service: light.turn_off
+        entity_id: group.gabes_room_all_lights
+      - service: switch.turn_off
+        entity_id: group.gabes_room_all_lights
+
+
+
+
+
+
+  - id: when_bathroom_light_turns_on_7am_9am_and_tash_is_in_bed_turn_off_main_lights
+    alias: 'When bathroom light turns on 7-9am and Tash is in bed, turn off main lights'
+    hide_entity: False
+    trigger:
+      - platform: state
+        entity_id: group.gabes_bathroom
+        from: 'off'
+        to: 'on'
+    condition:
+      condition: time
+      after: '06:45:00'
+      before: '09:00:00'
+      # condition: and
+      # conditions:
+      # - condition: time
+        # after: '07:00:00'
+        # before: '09:00:00'
+      # - condition: state
+        # entity_id: binary_sensor.eight_left_bed_presence
+        # state: 'on'
+    action:
+      - service: light.turn_off
+        entity_id: group.gabes_room_all
+
+
+
+
+
+
+  - id: switch_on_daniels_lights_when_he_arrives_home_10am_945pm
+    alias: 'Switch on Daniels lights when he arrives home (10a-9:45p)'
+    hide_entity: False
+    trigger:
+      - platform: state
+        entity_id: sensor.daniel_status
+        from: 'Away'
+        to: 'Just Arrived'
+    condition:
+      condition: time
+      after: '10:00:00'
+      before: '21:45:00'
+    action:
+      - service: light.turn_on
+        data:
+          entity_id: group.daniels_room
+          brightness: 10
+
+  - id: switch_off_daniels_lights_when_he_leaves_home
+    alias: 'Switch off Daniels lights when he leaves home'
+    hide_entity: False
+    trigger:
+      - platform: state
+        entity_id: sensor.daniel_status
+        from: 'Just Left'
+        to: 'Away'
+    action:
+      - service: light.turn_off
+        entity_id: group.daniels_room
+      - service: switch.turn_off
+        entity_id: group.daniels_room2
+
+
+
+
+
+
+  - id: turn_off_lights_when_everyone_leaves
+    alias: 'Turn off lights when everyone leaves'
+    hide_entity: False
+    trigger:
+      - platform: state
+        entity_id: sensor.gabe_status
+        from: 'Just Left'
+        to: 'Away'
+      - platform: state
+        entity_id: sensor.tash_status
+        from: 'Just Left'
+        to: 'Away'
+      - platform: state
+        entity_id: sensor.daniel_status
+        from: 'Just Left'
+        to: 'Away'
+      - platform: state
+        entity_id: sensor.nata_status
+        from: 'Just Left'
+        to: 'Away'
+      - platform: state
+        entity_id: sensor.miriam_status
+        from: 'Just Left'
+        to: 'Away'
+    condition:
+      condition: and
+      conditions:
+      - condition: template
+        value_template: "{% if is_state('sensor.gabe_status',   'Away') or is_state('sensor.gabe_status',   'Extended Away') %}{{ true }}{% else %}{{ false }}{% endif %}"
+      - condition: template
+        value_template: "{% if is_state('sensor.tash_status',   'Away') or is_state('sensor.tash_status',   'Extended Away') %}{{ true }}{% else %}{{ false }}{% endif %}"
+      - condition: template
+        value_template: "{% if is_state('sensor.daniel_status', 'Away') or is_state('sensor.daniel_status', 'Extended Away') %}{{ true }}{% else %}{{ false }}{% endif %}"
+      - condition: template
+        value_template: "{% if is_state('sensor.nata_status', 'Away') or is_state('sensor.nata_status', 'Extended Away') %}{{ true }}{% else %}{{ false }}{% endif %}"
+      - condition: template
+        value_template: "{% if is_state('sensor.miriam_status', 'Away') or is_state('sensor.miriam_status', 'Extended Away') %}{{ true }}{% else %}{{ false }}{% endif %}"
+    action:
+      - service: light.turn_off
+        entity_id: group.all_lights
+      - service: switch.turn_off
+        entity_id: group.all_lights
+        # data:
+      # rgb_color: [255, 255, 255]
+      # brightness: 100
+      # - delay:
+        # minutes: 3
+      # - service: light.turn_off
+      # entity_id:
+        # - light.dining_room_light
+        # - light.bedroom_light
+
+
+
+
+  - id: mark_person_as_just_arrived
+    alias: Mark person as just arrived
+    trigger:
+      - platform: state
+        entity_id: group.gabe
+        from: 'not_home'
+        to: 'home'
+      - platform: state
+        entity_id: group.tash
+        from: 'not_home'
+        to: 'home'
+      - platform: state
+        entity_id: group.daniel
+        from: 'not_home'
+        to: 'home'
+      - platform: state
+        entity_id: group.nata
+        from: 'not_home'
+        to: 'home'
+      - platform: state
+        entity_id: group.miriam
+        from: 'not_home'
+        to: 'home'
+    action:
+      - service: input_select.select_option
+        data_template:
+          entity_id: >
+            {%   if trigger.entity_id == 'group.gabe'   or trigger.entity_id == 'input_select.gabe_status_dropdown'   %}
+              input_select.gabe_status_dropdown
+            {% elif trigger.entity_id == 'group.tash'   or trigger.entity_id == 'input_select.tash_status_dropdown'   %}
+              input_select.tash_status_dropdown
+            {% elif trigger.entity_id == 'group.daniel' or trigger.entity_id == 'input_select.daniel_status_dropdown' %}
+              input_select.daniel_status_dropdown
+            {% elif trigger.entity_id == 'group.nata' or trigger.entity_id == 'input_select.nata_status_dropdown' %}
+              input_select.nata_status_dropdown
+            {% elif trigger.entity_id == 'group.miriam' or trigger.entity_id == 'input_select.miriam_status_dropdown' %}
+              input_select.miriam_status_dropdown
+            {% endif %}
+          option: Just Arrived
+   
+  - id: mark_person_as_home
+    alias: Mark person as home
+    trigger:
+      - platform: state
+        entity_id: input_select.gabe_status_dropdown
+        to: 'Just Arrived'
+        for:
+          minutes: 10
+      - platform: state
+        entity_id: input_select.tash_status_dropdown
+        to: 'Just Arrived'
+        for:
+          minutes: 10
+      - platform: state
+        entity_id: input_select.daniel_status_dropdown
+        to: 'Just Arrived'
+        for:
+          minutes: 10
+      - platform: state
+        entity_id: input_select.nata_status_dropdown
+        to: 'Just Arrived'
+        for:
+          minutes: 10
+      - platform: state
+        entity_id: input_select.miriam_status_dropdown
+        to: 'Just Arrived'
+        for:
+          minutes: 10
+      - platform: state
+        entity_id: input_select.gabe_status_dropdown
+        from: 'Just Left'
+        to: 'Just Arrived'
+      - platform: state
+        entity_id: input_select.tash_status_dropdown
+        from: 'Just Left'
+        to: 'Just Arrived'
+      - platform: state
+        entity_id: input_select.daniel_status_dropdown
+        from: 'Just Left'
+        to: 'Just Arrived'
+      - platform: state
+        entity_id: input_select.nata_status_dropdown
+        from: 'Just Left'
+        to: 'Just Arrived'
+      - platform: state
+        entity_id: input_select.miriam_status_dropdown
+        from: 'Just Left'
+        to: 'Just Arrived'
+      # - platform: state
+        # entity_id: group.gabe
+        # from: 'unknown'
+        # to: 'home'
+      # - platform: state
+        # entity_id: group.tash
+        # from: 'unknown'
+        # to: 'home'
+      # - platform: state
+        # entity_id: group.daniel
+        # from: 'unknown'
+        # to: 'home'
+    action:
+      - service: input_select.select_option
+        data_template:
+          entity_id: >
+            {%   if trigger.entity_id == 'group.gabe'   or trigger.entity_id == 'input_select.gabe_status_dropdown'   %}
+              input_select.gabe_status_dropdown
+            {% elif trigger.entity_id == 'group.tash'   or trigger.entity_id == 'input_select.tash_status_dropdown'   %}
+              input_select.tash_status_dropdown
+            {% elif trigger.entity_id == 'group.daniel' or trigger.entity_id == 'input_select.daniel_status_dropdown' %}
+              input_select.daniel_status_dropdown
+            {% elif trigger.entity_id == 'group.nata' or trigger.entity_id == 'input_select.nata_status_dropdown' %}
+              input_select.nata_status_dropdown
+            {% elif trigger.entity_id == 'group.miriam' or trigger.entity_id == 'input_select.miriam_status_dropdown' %}
+              input_select.miriam_status_dropdown
+            {% endif %}
+          option: Home
+   
+  - id: mark_person_as_just_left
+    alias: Mark person as just left
+    trigger:
+      - platform: state
+        entity_id: group.gabe
+        from: 'home'
+        to: 'not_home'
+      - platform: state
+        entity_id: group.tash
+        from: 'home'
+        to: 'not_home'
+      - platform: state
+        entity_id: group.daniel
+        from: 'home'
+        to: 'not_home'
+      - platform: state
+        entity_id: group.nata
+        from: 'home'
+        to: 'not_home'
+      - platform: state
+        entity_id: group.miriam
+        from: 'home'
+        to: 'not_home'
+    action:
+      - service: input_select.select_option
+        data_template:
+          entity_id: >
+            {%   if trigger.entity_id == 'group.gabe'   or trigger.entity_id == 'input_select.gabe_status_dropdown'   %}
+              input_select.gabe_status_dropdown
+            {% elif trigger.entity_id == 'group.tash'   or trigger.entity_id == 'input_select.tash_status_dropdown'   %}
+              input_select.tash_status_dropdown
+            {% elif trigger.entity_id == 'group.daniel' or trigger.entity_id == 'input_select.daniel_status_dropdown' %}
+              input_select.daniel_status_dropdown
+            {% elif trigger.entity_id == 'group.nata' or trigger.entity_id == 'input_select.nata_status_dropdown' %}
+              input_select.nata_status_dropdown
+            {% elif trigger.entity_id == 'group.miriam' or trigger.entity_id == 'input_select.miriam_status_dropdown' %}
+              input_select.miriam_status_dropdown
+            {% endif %}
+          option: Just Left
+   
+  - id: mark_person_as_away
+    alias: Mark person as away
+    trigger:
+      - platform: state
+        entity_id: input_select.gabe_status_dropdown
+        to: 'Just Left'
+        for:
+          minutes: 10
+      - platform: state
+        entity_id: input_select.tash_status_dropdown
+        to: 'Just Left'
+        for:
+          minutes: 10
+      - platform: state
+        entity_id: input_select.daniel_status_dropdown
+        to: 'Just Left'
+        for:
+          minutes: 10
+      - platform: state
+        entity_id: input_select.nata_status_dropdown
+        to: 'Just Left'
+        for:
+          minutes: 10
+      - platform: state
+        entity_id: input_select.miriam_status_dropdown
+        to: 'Just Left'
+        for:
+          minutes: 10
+    action:
+      - service: input_select.select_option
+        data_template:
+          entity_id: >
+            {%   if trigger.entity_id == 'group.gabe'   or trigger.entity_id == 'input_select.gabe_status_dropdown'   %}
+              input_select.gabe_status_dropdown
+            {% elif trigger.entity_id == 'group.tash'   or trigger.entity_id == 'input_select.tash_status_dropdown'   %}
+              input_select.tash_status_dropdown
+            {% elif trigger.entity_id == 'group.daniel' or trigger.entity_id == 'input_select.daniel_status_dropdown' %}
+              input_select.daniel_status_dropdown
+            {% elif trigger.entity_id == 'group.nata' or trigger.entity_id == 'input_select.nata_status_dropdown' %}
+              input_select.nata_status_dropdown
+            {% elif trigger.entity_id == 'group.miriam' or trigger.entity_id == 'input_select.miriam_status_dropdown' %}
+              input_select.miriam_status_dropdown
+            {% endif %}
+          option: Away
+   
+  - id: mark_person_as_extended_away
+    alias: Mark person as extended away
+    trigger:
+      - platform: state
+        entity_id: input_select.gabe_status_dropdown
+        to: 'Away'
+        for:
+          hours: 24
+      - platform: state
+        entity_id: input_select.tash_status_dropdown
+        to: 'Away'
+        for:
+          hours: 24
+      - platform: state
+        entity_id: input_select.daniel_status_dropdown
+        to: 'Away'
+        for:
+          hours: 24
+      - platform: state
+        entity_id: input_select.nata_status_dropdown
+        to: 'Away'
+        for:
+          hours: 24
+      - platform: state
+        entity_id: input_select.miriam_status_dropdown
+        to: 'Away'
+        for:
+          hours: 24
+    action:
+      - service: input_select.select_option
+        data_template:
+          entity_id: >
+            {%   if trigger.entity_id == 'group.gabe'   or trigger.entity_id == 'input_select.gabe_status_dropdown'   %}
+              input_select.gabe_status_dropdown
+            {% elif trigger.entity_id == 'group.tash'   or trigger.entity_id == 'input_select.tash_status_dropdown'   %}
+              input_select.tash_status_dropdown
+            {% elif trigger.entity_id == 'group.daniel' or trigger.entity_id == 'input_select.daniel_status_dropdown' %}
+              input_select.daniel_status_dropdown
+            {% elif trigger.entity_id == 'group.nata' or trigger.entity_id == 'input_select.nata_status_dropdown' %}
+              input_select.nata_status_dropdown
+            {% elif trigger.entity_id == 'group.miriam' or trigger.entity_id == 'input_select.miriam_status_dropdown' %}
+              input_select.miriam_status_dropdown
+            {% endif %}
+          option: 'Extended Away'

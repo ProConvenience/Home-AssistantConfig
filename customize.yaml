@@ -1,0 +1,12 @@
+# light.level:
+  # friendly_name: Dining Room
+# binary_sensor.living_room_multisensor_sensor
+  # friendly_name: 
+# sensor.living_room_multisensor_alarm_level
+# sensor.living_room_multisensor_alarm_type
+# sensor.living_room_multisensor_burglar
+# sensor.living_room_multisensor_luminance
+# sensor.living_room_multisensor_relative_humidity
+# sensor.living_room_multisensor_temperature
+# sensor.living_room_multisensor_sourcenodeid
+# sensor.living_room_multisensor_ultraviolet

@@ -1,0 +1,317 @@
+  zones:
+    name: Zones
+    entities:
+      - binary_sensor.floorplan
+
+
+
+  test_area:
+    name: Test Area
+    view: yes
+    entities:
+      - group.usual_people2
+      - group.occupied_areas
+      - switch.candle_lights
+      - group.system_info
+      - input_text.leaving_reminder
+      
+      - script.reload_stuff
+      - script.leaving_reminder
+      - script.pushbullet_arrival
+      - script.pushbullet_test
+      - script.pushbullet_test2
+      - script.googlehome_test
+      - script.googlehome_test2
+      
+      - sensor.occupancy_living_room
+      # - group.living_room_multisensor
+      - sensor.occupancy_foyer
+      # - group.foyer_multisensor
+      - sensor.occupancy_kitchen
+      # - group.kitchen_multisensor
+      
+      # - group.front_door_sensor
+      # - group.gabe
+      # - group.tash
+      # - group.daniel
+      
+      # - sensor.gabe_status
+      # - sensor.tash_status
+      # - sensor.daniel_status
+      # - sensor.nata_status
+      # - sensor.miriam_status
+  occupied_areas:
+    name: Occupied areas
+    entities:
+      - sensor.occupancy_living_room
+      - sensor.occupancy_foyer
+      - sensor.occupancy_kitchen
+  usual_people2:
+    name: Usual people 2
+    entities:
+      - sensor.gabe_status
+      - sensor.tash_status
+      - sensor.daniel_status
+      - sensor.nata_status
+      - sensor.miriam_status
+  usual_people:
+    name: Usual people
+    entities:
+      - group.gabe
+      - input_select.gabe_status_dropdown
+      - sensor.gabe_status
+      - group.tash
+      - input_select.tash_status_dropdown
+      - sensor.tash_status
+      - group.daniel
+      - input_select.daniel_status_dropdown
+      - sensor.daniel_status
+      # - group.robb
+      - group.nata
+      - input_select.nata_status_dropdown
+      - sensor.nata_status
+      - group.miriam
+      - input_select.miriam_status_dropdown
+      - sensor.miriam_status
+  gabe:
+    name: Gabe Tracking Group
+    entities:
+      - device_tracker.gabrielysiphone
+      - device_tracker.gabrielysiphone_BT
+  tash:
+    name: Tash Tracking Group
+    entities:
+      - device_tracker.nataliyasiphone
+      - device_tracker.nataliyasiphone_BT
+  daniel:
+    name: Daniel Tracking Group
+    entities:
+      - device_tracker.danielsiphone
+      - device_tracker.danielsiphone_BT
+  # robb:
+    # name: Robb
+    # entities:
+      # - device_tracker.robbsiphone
+  gabe_and_tash:
+    name: Gabe and Tash Tracking Group
+    entities:
+      - group.gabe
+      - group.tash
+  nata_and_miriam:
+    name: Nata and Miriam Tracking Group
+    entities:
+      - group.nata
+      - group.miriam
+  nata:
+    name: Nata Tracking Group
+    entities:
+      - device_tracker.nata_phone
+  miriam:
+    name: Miriam Tracking Group
+    entities:
+      - device_tracker.miriam_phone
+  all_lights:
+    name: All lights
+    entities:
+      - group.shared_space
+      - group.gabes_room_all_lights
+      - group.daniels_room
+      - group.daniels_room2
+  shared_space:
+    name: Shared Space
+    view: yes
+    entities:
+      - switch.kitchen
+      - switch.foyer_switch
+      - light.living_room_corner
+      - light.living_room_middle
+      - light.dining_room_light_level
+      - group.usual_people
+      - group.postal_service
+      - group.living_room_multisensor
+  main_room:
+    name: Main Room
+    entities:
+      - switch.kitchen
+      - switch.foyer_switch
+      - group.living_room
+      - light.dining_room_light_level
+  living_room:
+    name: Living Room
+    entities:
+      - light.living_room_corner
+      - light.living_room_middle
+  gabes_room_all:
+    name: Gabes Room
+    view: yes
+    entities:
+      - group.gabes_room
+      - group.gabes_room2
+      - group.gabes_bathroom
+      - group.gabe
+      - group.tash
+  gabes_room_all_lights:
+    name: Gabes Room All Lights
+    entities:
+      - group.gabes_room
+      - group.gabes_room2
+      - group.gabes_bathroom
+  gabes_room:
+    name: Gabes Room Hue
+    entities:
+      - light.floor_lamp
+      - light.nightstand
+      - light.behind_teevee
+  gabes_room2:
+    name: Gabes Bathroom and Closet
+    entities:
+      - switch.gabriels_closet
+      - switch.gabriels_bathroom_fan_switch
+      - switch.gabriels_bathroom_vanity_switch
+      # - switch.bathroom
+  gabes_bathroom:
+    name: Gabes Bathroom
+    entities:
+      - switch.gabriels_bathroom_fan_switch
+      - switch.gabriels_bathroom_vanity_switch
+  daniels_room_all:
+    name: Daniels Room
+    view: yes
+    entities:
+      - group.daniels_room
+      - group.daniels_room2
+      - group.daniels_tv
+      - group.daniels_computers
+      - group.daniel
+  daniels_room:
+    name: Daniels Room Hue
+    entities:
+      - light.daniels_room_corner
+      - light.daniels_room_middle
+  daniels_room2:
+    name: Daniels Bathroom and Closet
+    entities:
+      - switch.daniels_bathroom
+      - switch.daniels_closet
+  daniels_tv:
+    name: Daniels TV
+    entities:
+      - switch.daniels_tv
+      - media_player.penis_kings_room
+      - remote.penis_kings_room
+      - media_player.samsung_tv_remote
+  daniels_computers:
+    name: Daniels Computer(s)
+    entities:
+      - device_tracker.danielpc
+  lights_that_annoy_daniel:
+    name: Daniels Computer(s)
+    entities:
+      - switch.kitchen
+      - switch.foyer_switch
+  
+  system_info:
+    name: System Info
+    entities:
+      # - sensor.ram_available
+      # - sensor.ram_used
+      - sensor.memory_free
+      - sensor.memory_use_percent
+      # - sensor.cpu_used
+      - sensor.processor_use
+      # - sensor.disk_used_home
+      - sensor.disk_free_home
+      - sensor.disk_use_percent_home
+  
+  postal_service:
+    name: Postal Service
+    entities:
+      - sensor.usps_packages
+      - sensor.usps_mail
+      - sensor.usps
+      - sensor.fedex
+      - sensor.ups
+      - camera.usps_mail
+  
+  eight_sleep:
+    name: Eight Sleep
+    entities:
+      # gabe's side
+      - binary_sensor.eight_right_bed_presence
+      - sensor.eight_right_bed_state
+      - sensor.eight_right_bed_temperature
+      - sensor.eight_right_previous_sleep_session
+      - sensor.eight_right_sleep_session
+      - sensor.eight_right_sleep_stage
+      - binary_sensor.eight_left_bed_presence
+      # tash's side
+      - sensor.eight_left_bed_state
+      # - sensor.eight_left_bed_temperature
+      # - sensor.eight_left_previous_sleep_session
+      # - sensor.eight_left_sleep_session
+      # - sensor.eight_left_sleep_stage
+
+  google_homes:
+    name: Google Homes
+    view: yes
+    icon: mdi:music
+    entities:
+      - media_player.kitchen_speaker
+      - media_player.living_room_speaker
+      - media_player.gabes_room_speaker
+
+  living_room_multisensor:
+    name: Living Room
+    entities:
+      - zwave.living_room
+      - binary_sensor.living_room_sensor
+      - sensor.living_room_alarm_level
+      - sensor.living_room_alarm_type
+      - sensor.living_room_burglar
+      - sensor.living_room_luminance
+      - sensor.living_room_relative_humidity
+      - sensor.living_room_temperature
+      - sensor.living_room_sourcenodeid
+      - sensor.living_room_ultraviolet
+
+  foyer_multisensor:
+    name: Foyer
+    entities:
+      - zwave.foyer_2
+      - binary_sensor.foyer_sensor
+      - sensor.foyer_alarm_level
+      - sensor.foyer_alarm_type
+      - sensor.foyer_burglar
+      - sensor.foyer_luminance
+      - sensor.foyer_relative_humidity
+      - sensor.foyer_temperature
+      - sensor.foyer_sourcenodeid
+      - sensor.foyer_ultraviolet
+
+  kitchen_multisensor:
+    name: Kitchen
+    entities:
+      - zwave.kitchen
+      - binary_sensor.kitchen_sensor
+      - sensor.kitchen_alarm_level
+      - sensor.kitchen_alarm_type
+      - sensor.kitchen_burglar
+      - sensor.kitchen_luminance
+      - sensor.kitchen_relative_humidity
+      - sensor.kitchen_temperature
+      - sensor.kitchen_sourcenodeid
+      - sensor.kitchen_ultraviolet
+
+  front_door_sensor:
+    name: Front Door
+    entities:
+      - zwave.front_door_sensor
+      - binary_sensor.front_door_sensor_sensor
+      - sensor.front_door_sensor_access_control
+      - sensor.front_door_sensor_alarm_level
+      - sensor.front_door_sensor_alarm_type
+      - sensor.front_door_sensor_burglar
+      - sensor.front_door_sensor_sourcenodeid
+      - timer.door_recently_open_timer
+      - sensor.door_recently_open
+

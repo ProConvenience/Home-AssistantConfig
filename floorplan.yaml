@@ -1,0 +1,193 @@
+      name: Demo Floorplan
+      image: /local/custom_ui/floorplan/floorplan.svg
+      # image: floorplan.svg
+      # image: /www/custom_ui/floorplan/floorplan.svg
+      stylesheet: /local/custom_ui/floorplan/floorplan.css
+      # stylesheet: floorplan.css
+      # stylesheet: /www/custom_ui/floorplan/floorplan.css
+      
+      # These options are optional
+      warnings:            # enable warnings (to find out why things might ot be working correctly)
+      # pan_zoom:            # enable experimental panning / zooming
+      hide_app_toolbar:    # hide the application toolbar (when used as a custom panel)
+
+      # last_motion_entity: sensor.template_last_motion
+      # last_motion_class: last-motion
+
+      entities:
+        # - name: Cohabitants
+          # entities:
+            # - group.gabe
+            # - group.daniel
+            # - group.tash
+            # - device_tracker.gabrielysiphone
+            # - device_tracker.gabriel_saslafskys_iphone
+            # - device_tracker.nataliyasiphone
+            # - device_tracker.danielsiphone
+          # # text_template: '${entity.state ? entity.state.replace("not_home", "away") : "undefined"}'
+          # states:
+            # - state: 'home'
+              # class: 'alarm-armed'
+            # - state: 'not_home'
+              # class: 'alarm-disarmed'
+            # - state: 'away'
+              # class: 'alarm-disarmed'
+            # # - state: 'home'
+              # # class: 'presence-home'
+            # # - state: 'not_home'
+              # # class: 'presence-away'
+            # # - state: 'away'
+              # # class: 'presence-away'
+
+      groups:
+
+        - name: Cohabitants
+          entities:
+            - group.gabe
+            - group.daniel
+            - group.tash
+          text_template: '${entity.state ? entity.state.replace("not_home", "away") : "undefined"}'
+          states:
+            - state: 'home'
+              class: 'presence-home'
+            - state: 'not_home'
+              class: 'presence-away'
+            - state: 'away'
+              class: 'presence-away'
+
+        # - name: Room Buttons
+          # entities:
+            # - switch.main_room_smart_toggle
+            # - switch.gabes_room_smart_toggle
+            # # - switch.daniels_room_smart_toggle
+          # states:
+            # - state: 'on'
+              # class: 'light-on'
+            # - state: 'off'
+              # class: 'light-off'
+          # action_template:
+            # domain: switch
+            # service: toggle
+            # # domain: homeassistant
+            # # service: '${(entity.state === "on") ? "turn_off" : "turn_on"}'
+
+        # - name: Sensors
+          # entities:
+             # - sensor.yr_symbol
+          # text_template: '${entity.state ? entity.state : "unknown"}'
+          # # An example of rounding up a number, i.e. a temperature of 90.1 becomes 91
+          # # text_template: '${entity.state ? Math.ceil(entity.state) : "undefined"}'  
+          # class_template: '
+            # # var temp = parseFloat(entity.state.replace("°", ""));
+            # var sun = parseFloat(entity.state);
+            # if (sun = 1)
+              # return "sunny";
+            # else if (sun = 2)
+              # return "something";
+            # else
+              # return "something else";
+            # '
+
+        - name: Lights
+          entities:
+            - light.daniels_room_corner
+            - light.daniels_room_middle
+            - light.living_room_corner
+            - light.living_room_middle
+            - light.dining_room_light_level
+            - light.behind_teevee
+            - light.floor_lamp
+            - light.nightstand
+          states:
+            - state: 'on'
+              class: 'light-on'
+            - state: 'off'
+              class: 'light-off'
+
+        - name: Switches
+          entities:
+            - switch.daniels_bathroom
+            - switch.daniels_closet
+            - switch.daniels_tv
+            - switch.foyer_switch
+            - switch.gabriels_bathroom_fan_switch
+            - switch.gabriels_bathroom_vanity_switch
+            - switch.gabriels_closet
+            - switch.kitchen
+            
+            - switch.main_room_smart_toggle
+            - switch.gabes_room_smart_toggle
+          states:
+            - state: 'on'
+              class: 'doorbell-on'
+            - state: 'off'
+              class: 'doorbell-off'
+          action:
+            domain: switch
+            service: toggle
+
+
+        # - name: NVR
+          # entities:
+             # - binary_sensor.blue_iris_nvr
+          # text_template: '${(entity.state === "on") ? "online" : "offline"}'
+          # states:
+            # - state: 'off'
+              # class: 'danger-text'
+            # - state: 'on'
+              # class: 'success-text'
+
+        # - name: Alarm Panel
+          # entities:
+             # - alarm_control_panel.alarm
+          # states:
+            # - state: 'armed_away'
+              # class: 'alarm-armed'
+            # - state: 'armed_home'
+              # class: 'alarm-armed'
+            # - state: 'disarmed'
+              # class: 'alarm-disarmed'
+
+        # - name: Binary sensors
+          # entities:
+            # - binary_sensor.front_hallway
+            # - binary_sensor.kitchen
+            # - binary_sensor.master_bedroom
+            # - binary_sensor.theatre_room
+          # states:
+            # - state: 'off'
+              # class: 'info-background'
+            # - state: 'on'
+              # class: 'warning-background'
+          # state_transitions:
+            # - name: On to off
+              # from_state: 'on'
+              # to_state: 'off'
+              # duration: 10
+
+        # - name: Cameras
+          # entities:
+            # - camera.hallway
+            # - camera.driveway
+            # - camera.front_door
+            # - camera.backyard
+          # states:
+            # - state: 'idle'
+              # class: 'camera-idle'
+              
+#        - name: thermostat_temp
+#          entities:
+#            - climate.downstairs
+#            - climate.upstairs
+#          text_template: '${entity.attributes.current_temperature ? entity.attributes.current_temperature : "undefined"}'
+#
+# The above text_template uses extended attributes from the climate.* objects to get current temperature.
+
+#        - name: text_states
+#          entities:
+#            - sensor.downstairs_thermostat_humidity
+#            - sensor.dark_sky_temperature
+#            - sensor.last_message
+#          text_template: '${entity.state ? entity.state.replace(/\s{2,}/g,"") : "undefined"}'
+#
+# The above text_template uses jQuery syntax to search and replace any instance of 2 consecutive (or more) spaces in a string of text.

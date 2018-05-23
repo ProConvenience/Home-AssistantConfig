@@ -1,0 +1,569 @@
+homeassistant:
+  # Name of the location where Home Assistant is running
+  name: Home
+  # Location required to calculate the time the sun rises and sets
+  latitude: !secret hass_latitude
+  longitude: !secret hass_longitude
+  # Impacts weather/sunrise data (altitude above sea level in meters)
+  elevation: 5
+  # metric for Metric, imperial for Imperial
+  unit_system: imperial
+  # Pick yours from here: http://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+  time_zone: America/New_York
+  # customize:
+    # light.dining_room_light_level:
+      # emulated_hue_hidden: false
+      # emulated_hue_name: "dining room"
+    # switch.foyer_switch:
+      # emulated_hue_hidden: false
+      # emulated_hue_name: "foyer"
+    # switch.gabriels_bathroom_vanity_switch:
+      # emulated_hue_hidden: false
+      # emulated_hue_name: "gabriels bathroom vanity"
+    # switch.gabriels_bathroom_fan_switch:
+      # emulated_hue_hidden: false
+      # emulated_hue_name: "gabriels bathroom fan"
+    # # switch.plugin_light_switch_device:
+      # # friendly_name: "Daniels Closet"
+    # binary_sensor.floorplan:
+      # custom_ui_state_card: state-card-floorplan
+      # config: !include floorplan.yaml
+    # switch.daniels_tv_volume:
+      # emulated_hue_hidden: false
+      # emulated_hue_name: "remote volume"
+    # switch.candle_lights:
+      # emulated_hue_hidden: false
+      # emulated_hue_name: "candles"
+
+# Show links to resources in log and frontend
+# introduction:
+
+# Enables the frontend
+frontend:
+  javascript_version: es5
+  # 'javascript_version' fixes this issue: https://github.com/home-assistant/home-assistant/issues/8556
+  extra_html_url:
+    - /local/custom_ui/state-card-floorplan.html
+
+# Enables configuration UI
+config:
+
+# Enables Home Assistant Cloud
+cloud:
+  google_actions:
+    filter:
+      include_domains:
+        - light
+        - switch
+      exclude_entities:
+        - switch.gabes_room_smart_toggle
+        # - switch.main_room_smart_toggle
+  alexa:
+    filter:
+      include_domains:
+        - light
+        - switch
+      exclude_entities:
+        - switch.gabes_room_smart_toggle
+        # - switch.main_room_smart_toggle
+
+http:
+  # Uncomment this to add a password (recommended!)
+  api_password: !secret http_api_password
+  # Uncomment this if you are using SSL or running in Docker etc
+  ssl_certificate: !secret http_ssl_certificate
+  ssl_key: !secret http_ssl_key
+  base_url: !secret http_base_url
+
+# Checks for available updates
+# Note: This component will send some information about your system to
+# the developers to assist with development of Home Assistant.
+# For more information, please see:
+# https://home-assistant.io/blog/2016/10/25/explaining-the-updater/
+updater:
+
+# Discover some devices automatically
+discovery:
+  # ignore:
+    # - netgear_router
+
+# Allows you to issue voice commands from the frontend in enabled browsers
+conversation:
+
+# Enables support for tracking state changes over time.
+history:
+
+# View all events in a logbook
+logbook:
+  exclude:
+    domains:
+      - group
+      - zwave
+      - device_tracker
+      - input_select
+    entities:
+      - switch.gabes_room_smart_toggle
+      - switch.main_room_smart_toggle
+      - switch.main_room_smart_toggle
+      
+      - binary_sensor.front_door_sensor_sensor
+      - sensor.front_door_sensor_access_control
+      - sensor.front_door_sensor_alarm_level
+      - sensor.front_door_sensor_alarm_type
+      # - sensor.front_door_sensor_burglar
+      - sensor.front_door_sensor_sourcenodeid
+      
+      - binary_sensor.kitchen_sensor
+      - sensor.kitchen_alarm_level
+      - sensor.kitchen_alarm_type
+      - sensor.kitchen_burglar
+      # - sensor.kitchen_luminance
+      # - sensor.kitchen_relative_humidity
+      # - sensor.kitchen_temperature
+      - sensor.kitchen_sourcenodeid
+      - sensor.kitchen_ultraviolet
+      
+      - binary_sensor.foyer_sensor
+      - sensor.foyer_alarm_level
+      - sensor.foyer_alarm_type
+      - sensor.foyer_burglar
+      # - sensor.foyer_luminance
+      # - sensor.foyer_relative_humidity
+      # - sensor.foyer_temperature
+      - sensor.foyer_sourcenodeid
+      - sensor.foyer_ultraviolet
+      
+      - binary_sensor.living_room_sensor
+      - sensor.living_room_alarm_level
+      - sensor.living_room_alarm_type
+      - sensor.living_room_burglar
+      # - sensor.living_room_luminance
+      # - sensor.living_room_relative_humidity
+      # - sensor.living_room_temperature
+      - sensor.living_room_sourcenodeid
+      - sensor.living_room_ultraviolet
+      
+      - automation.mark_person_as_away
+      - automation.mark_person_as_extended_away
+      - automation.mark_person_as_home
+      - automation.mark_person_as_just_arrived
+      - automation.mark_person_as_just_left
+  include:
+    entities:
+      - group.all_lights
+      - group.main_room
+      - group.living_room
+      - group.gabes_room_all_lights
+      - group.gabes_room
+      - group.gabes_room2
+      - group.gabes_bathroom
+      - group.daniels_room
+      - group.daniels_room2
+
+logger:
+  # default: debug
+  default: warn
+  # logs:
+    # homeassistant.components.usps: critical
+    # homeassistant.components.camera: critical
+    # homeassistant.components.eight_sleep: critical
+    # # homeassistant.components.device_tracker: fatal
+
+# Track the sun
+sun:
+
+recorder:
+
+# Presence detection
+# device tracker will only look for global settings under the configuration of the first 
+# configured platform for:   track_new_devices, interval_seconds, and consider_home
+device_tracker:
+  - platform: netgear
+    host: !secret netgear_host
+    username: !secret netgear_username
+    password: !secret netgear_password
+    interval_seconds: 10
+    # consider_home: 600
+    consider_home: 30
+    new_device_defaults:
+      track_new_devices: False
+    track_new_devices: False
+    # port: 80
+  # bluetooth - pi must be plugged into ethernet; otherwise, WiFi will interfere and make system REALLY slow/stop
+  - platform: bluetooth_tracker
+    new_device_defaults:
+      track_new_devices: False
+    track_new_devices: False
+  # - platform: mqtt
+    # devices:
+      # bluetooth_gabe: 'bluetooth/presence/gabe_bt'
+      # bluetooth_daniel: 'bluetooth/presence/daniel_bt'
+
+zwave:
+  usb_path: /dev/ttyACM0
+
+remote:
+  - platform: harmony
+    name: Harmony
+    host: !secret harmony_host
+    scan_interval: 10
+
+# input_boolean:
+  # door_recently_open:
+    # name: Has the door been open in last 5 minutes?
+    # initial: off
+
+input_text:
+  leaving_reminder:
+    name: Reminder on leaving
+    max: 255
+
+input_select:
+  gabe_status_dropdown:
+    name: Gabe
+    options:
+      - Home
+      - Just Arrived
+      - Just Left
+      - Away
+      - Extended Away
+      - unknown
+    initial: Away
+  tash_status_dropdown:
+    name: Tash
+    options:
+      - Home
+      - Just Arrived
+      - Just Left
+      - Away
+      - Extended Away
+      - unknown
+    initial: Away
+  daniel_status_dropdown:
+    name: Daniel
+    options:
+      - Home
+      - Just Arrived
+      - Just Left
+      - Away
+      - Extended Away
+      - unknown
+    initial: Away
+  nata_status_dropdown:
+    name: Nata
+    options:
+      - Home
+      - Just Arrived
+      - Just Left
+      - Away
+      - Extended Away
+      - unknown
+    initial: Away
+  miriam_status_dropdown:
+    name: Miriam
+    options:
+      - Home
+      - Just Arrived
+      - Just Left
+      - Away
+      - Extended Away
+      - unknown
+    initial: Away
+
+sensor:
+  - platform: systemmonitor
+    resources:
+      - type: disk_use_percent
+        arg: /home
+      - type: disk_free
+        arg: /home
+      - type: memory_use_percent
+      - type: memory_free
+      - type: processor_use
+# Presence status
+  - platform: template
+    sensors:
+      gabe_status:
+        value_template: '{{ states.input_select.gabe_status_dropdown.state }}'
+        friendly_name: 'Gabe'
+        entity_id: input_select.gabe_status_dropdown
+      tash_status:
+        value_template: '{{ states.input_select.tash_status_dropdown.state }}'
+        friendly_name: 'Nataliya'
+        entity_id: input_select.tash_status_dropdown
+      daniel_status:
+        value_template: '{{ states.input_select.daniel_status_dropdown.state }}'
+        friendly_name: 'Daniel'
+        entity_id: input_select.daniel_status_dropdown
+      nata_status:
+        value_template: '{{ states.input_select.nata_status_dropdown.state }}'
+        friendly_name: 'Nata'
+        entity_id: input_select.nata_status_dropdown
+      miriam_status:
+        value_template: '{{ states.input_select.miriam_status_dropdown.state }}'
+        friendly_name: 'miriam'
+        entity_id: input_select.miriam_status_dropdown
+      door_recently_open:
+        value_template: >
+          {% if states.timer.door_recently_open_timer.state == 'active' %}
+            true
+          {% else %}
+            false
+          {% endif %}
+        friendly_name: 'Door Timer Status'
+        entity_id: timer.door_recently_open_timer
+      occupancy_living_room:
+        friendly_name: 'Living Room Occupied?'
+        entity_id: sensor.living_room_burglar
+        value_template: >
+          {% if states.sensor.living_room_burglar.state == '8' %}
+            true
+          {% else %}
+            false
+          {% endif %}
+      occupancy_foyer:
+        friendly_name: 'Foyer Occupied?'
+        entity_id: sensor.foyer_burglar
+        value_template: >
+          {% if states.sensor.foyer_burglar.state == '8' %}
+            true
+          {% else %}
+            false
+          {% endif %}
+      occupancy_kitchen:
+        friendly_name: 'Kitchen Occupied?'
+        entity_id: sensor.kitchen_burglar
+        value_template: >
+          {% if states.sensor.kitchen_burglar.state == '8' %}
+            true
+          {% else %}
+            false
+          {% endif %}
+
+# Weather Prediction
+  - platform: yr
+# Date and Time
+  - platform: time_date
+    display_options:
+      - 'time_date'
+# Harmony status
+  - platform: template
+    sensors:
+      harmony:
+        value_template: '{{ states.remote.harmony.attributes.current_activity }}'
+        friendly_name: 'Harmony Hub'
+# UPS
+  - platform: ups
+    username: !secret ups_username
+    password: !secret ups_password
+# # FedEx
+  # - platform: fedex
+    # username: !secret fedex_username
+    # password: !secret fedex_password
+# update ssl certificate
+  - platform: command_line
+    name: SSL cert expiry
+    unit_of_measurement: days
+    # scan_interval: 10800
+    scan_interval: 60
+    command: !secret sslcert_command
+
+shell_command: 
+  renew_ssl: ~/certbot/certbot-auto renew --quiet --no-self-upgrade --standalone --preferred-challenges http-01
+  # renew_ssl: ~/certbot/certbot-auto renew --quiet --no-self-upgrade --standalone --preferred-challenges tls-sni-01 --tls-sni-01-port 8123 --pre-hook "sudo systemctl stop home-assistant@homeassistant.service" --post-hook "sudo systemctl start home-assistant@homeassistant.service"
+  # renew_ssl: ~/certbot/certbot-auto renew --quiet --no-self-upgrade --standalone --preferred-challenges tls-sni-01 --tls-sni-01-port 8123 --pre-hook "sudo systemctl stop homeassistant@home-assistant.service" --post-hook "sudo systemctl start homeassistant@home-assistant.service"
+
+# Hue lights
+light:
+  platform: hue
+  host: !secret hue_host
+  # allow_unreachable: true
+  allow_unreachable: false
+
+# emulated_hue:
+  # host_ip: !secret emulated_hue_host_ip
+  # expose_by_default: false
+  # # listen_port: 8300
+  # # type: alexa
+  # # # expose_by_default: true
+
+# mqtt:
+  # embedded:
+    # listeners:
+      # default:
+        # max-connections: 500
+        # type: tcp
+        # bind: 127.0.0.1:1888
+  # client_id: hass-client
+  # username: homeassistant
+  # password: !secret http_api_password
+  # broker: 127.0.0.1
+  # port: 1888
+
+# mqtt:
+  # # embedded:
+  # broker: localhost
+  # # port: 1883
+  # client_id: home-assistant-1
+  # # keepalive: 60
+  # username: homeassistant
+  # password: !secret http_api_password
+  # # certificate: /home/paulus/dev/addtrustexternalcaroot.crt
+  # # protocol: 3.1
+  # birth_message:
+    # topic: 'hass/status'
+    # payload: 'online'
+    # # qos: 1
+    # # retain: true
+  # will_message:
+    # topic: 'hass/status'
+    # payload: 'offline'
+    # # qos: 1
+    # # retain: true
+
+tts:
+  - platform: google
+    cache: true
+    cache_dir: /tmp/tts
+    time_memory: 300
+
+media_player:
+  - platform: vlc
+    name: vlc_local_speaker
+    # arguments: '--alsa-audio-device=hw:1,0'
+  - platform: samsungtv
+    host: !secret samsungtv_host
+    mac: !secret samsungtv_mac
+  - platform: cast
+
+notify:
+  - platform: pushbullet
+    name: pushbullet
+    api_key: !secret pushbullet_api_key
+
+wemo:
+
+switch:
+  - platform: template
+    switches:
+      main_room_smart_toggle:
+        friendly_name: "Main Room Smart Toggle"
+        value_template: "{{ is_state('group.main_room', 'on') }}"
+        turn_on:
+          service: homeassistant.turn_on
+          data:
+            entity_id: group.living_room
+        turn_off:
+          service: homeassistant.turn_off
+          data:
+            entity_id: group.main_room
+      gabes_room_smart_toggle:
+        friendly_name: "Gabes Room Smart Toggle"
+        value_template: "{{ is_state('group.gabes_room_all_lights', 'on') }}"
+        turn_on:
+          service: homeassistant.turn_on
+          data:
+            entity_id: group.gabes_room
+        turn_off:
+          service: homeassistant.turn_off
+          data:
+            entity_id: group.gabes_room_all_lights
+      daniels_tv_volume:
+        friendly_name: "Daniel's TV Volume"
+        value_template: "{{ is_state('group.gabes_room_all_lights', 'on') }}"
+        turn_on:
+          service: script.turn_on
+          entity_id: script.ir__daniels_tv_volume_up
+        turn_off:
+          service: script.turn_on
+          entity_id: script.ir__daniels_tv_volume_down
+  - platform: broadlink
+    host: 192.168.1.34
+    mac: !secret broadlink_mac
+    # tea_light__on_command 'JgBgAAABK5URFREUERQSFBEUEhQRFBEVETkROBI4ETkRORE5ETgSOBEVERQRFREUERURFBEUEhQRORE4EjgRORE5ETkRORE4EgAFIwABLEkTAAxaAAEsSRMADFoAASpLEgANBQAAAAAAAAAA'
+    # tea_light__off_command 'JgBgAAABLZMUERQTEhIUEhMSFBITEhQSEzcTNhQ2EzcTNxI4EjgSNxQ2EhQSExIUEhMSExIUEhMSFBI4EjcSOBI4EjgSOBI3EgAFIwABLEoSAAxaAAErShIADFkAAS1KEgANBQAAAAAAAAAA'
+    # daniel_tv__volume_up_command 'JgDSAJWTEzcTNhQ2ExITERQRExITEhM2EzYUNhMSExITEhMRExITNhQ2EzcTERMSExITEhMRExITEhMSEzYTNxM2EzcTNhMABgCVkxM2EzcTNhMSExITERQRExITNhQ2EzYUERMSExITEhMREzcTNhM3ExITERMSExITEhMRExITEhM2FDYTNhQ2EzYUAAX/lZMTNhM3EzYTEhMSExITERMSEzcTNRQ3ExETEhMSExITERM3EzYTNxMSExETEhMSExITERMSExITNhM3EzYTNxM2EwANBQAAAAAAAA=='
+    # daniel_tv__volume_down_command 'JgDSAJWTEzcTNhM3ExEUERMSExITEhM2EzcTNhMSExITERQRExITNhQ2ExITNhMSExITEhMRFBETEhM2FBETNxM2EzcTNhQABf6WkxM2FDYTNxMRExITEhMSExEUNhM2FDYTEhMSExETEhMSEzYTNxMSEzYTEhMSExITERMSExITNhMSEzcTNhM3EzYTAAYAlZMTNhQ2EzYUERMSExITEhMREzcTNhM3ExITERQRExITEhM2EzcTEhM2ExITEhMRFBETEhMSEzYTEhM2FDYTNhQ2EwANBQAAAAAAAA=='
+    switches:
+      # ir__daniels_tv:
+        # friendly_name: "Daniel's TV Volume"
+        # # volume up
+        # command_on: 'JgDSAJWTEzcTNhQ2ExITERQRExITEhM2EzYUNhMSExITEhMRExITNhQ2EzcTERMSExITEhMRExITEhMSEzYTNxM2EzcTNhMABgCVkxM2EzcTNhMSExITERQRExITNhQ2EzYUERMSExITEhMREzcTNhM3ExITERMSExITEhMRExITEhM2FDYTNhQ2EzYUAAX/lZMTNhM3EzYTEhMSExITERMSEzcTNRQ3ExETEhMSExITERM3EzYTNxMSExETEhMSExITERMSExITNhM3EzYTNxM2EwANBQAAAAAAAA=='
+        # # volume down
+        # command_off: 'JgDSAJWTEzcTNhM3ExEUERMSExITEhM2EzcTNhMSExITERQRExITNhQ2ExITNhMSExITEhMRFBETEhM2FBETNxM2EzcTNhQABf6WkxM2FDYTNxMRExITEhMSExEUNhM2FDYTEhMSExETEhMSEzYTNxMSEzYTEhMSExITERMSExITNhMSEzcTNhM3EzYTAAYAlZMTNhQ2EzYUERMSExITEhMREzcTNhM3ExITERQRExITEhM2EzcTEhM2ExITEhMRFBETEhMSEzYTEhM2FDYTNhQ2EwANBQAAAAAAAA=='
+      ir__candle_lights:
+        friendly_name: "Candle Lights"
+        command_on: 'JgBYAAABLZMTExMSExIUEhMSExMTEhMTEzYUNhM3EzcTNxM3EzYTNxMTExITEhQSExITExMSExMTNhM3EzcTNxM3EzYUNhM3EwAFIAABLUkTAAxZAAEqShEADQU='
+        command_off: 'JgBgAAABLZMUEhMSFBITEhQSExITEhQSEzYUNhQ2FDYUNhM2FDYUNhQ2ExIUEhMSFBITEhQRFBITEhQ2FDYTNxM2FDYUNhQ2EwAFIQABLUgUAAxZAAEsSBQADFgAAS1IFAANBQAAAAAAAAAA'
+
+# switch:
+  # - platform: command_line
+    # scan_interval: 30
+    # switches:
+      # door_front:
+        # command_on: "python3 /home/hass/.homeassistant/kevo/lock-front.py"
+        # command_off: "python3 /home/hass/.homeassistant/kevo/unlock-front.py"
+        # command_state: "python3 /home/hass/.homeassistant/kevo/status-front.py"
+        # value_template: >
+          # {% if value == "Locked" %}
+            # true
+          # {% elif value == "Unlocked" %}
+            # false
+          # {% else %}
+          # {% endif %}
+  # - platform: mqtt
+    # # state_topic: "dash/gatorade_button"
+    # command_topic: "dash/gatorade_button"
+    # name: Gatorade Dash Button
+
+# switch:
+  # - platform: template
+    # switches:
+      # toggle_wemo_gabetest:
+        # value_template: "{{ is_state('switch.gabetest', 'on') }}"
+        # turn_on:
+          # service: light.turn_on
+          # entity_id: group.living_room
+        # turn_off:
+          # service: light.turn_off
+          # entity_id: group.living_room
+
+panel_custom: 
+  - name: floorplan
+    sidebar_title: Floorplan
+    sidebar_icon: mdi:home
+    url_path: floorplan
+    config: !include floorplan.yaml
+# binary_sensor:
+  # - platform: mqtt
+    # state_topic: dummy/floorplan/sensor
+    # name: Floorplan
+
+timer:
+  door_recently_open_timer:
+    duration: '00:10:00'
+
+
+# # USPS - disabled until update in 54.1 (it should be fixed then) - turn on Camera component too - https://github.com/home-assistant/home-assistant/issues/9552
+# usps:
+  # username: !secret usps_username
+  # password: !secret usps_password
+
+# # USPS - disabled until update in 54.1 (it should be fixed then) - turn on USPS component too - https://github.com/home-assistant/home-assistant/issues/9552
+# camera:
+  # - platform: usps
+    # scan_interval: 3
+
+# eight_sleep:
+  # username: !secret eight_sleep_username
+  # password: !secret eight_sleep_password
+  # partner: true
+
+group: !include groups.yaml
+
+automation: !include automations.yaml
+# automation old: !include automations_old.yaml
+
+script: !include scripts.yaml
+
+# lock: !include lock.yaml
