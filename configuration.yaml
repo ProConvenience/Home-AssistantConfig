@@ -10,30 +10,18 @@ homeassistant:
   unit_system: imperial
   # Pick yours from here: http://en.wikipedia.org/wiki/List_of_tz_database_time_zones
   time_zone: America/New_York
-  # customize:
-    # light.dining_room_light_level:
-      # emulated_hue_hidden: false
-      # emulated_hue_name: "dining room"
-    # switch.foyer_switch:
-      # emulated_hue_hidden: false
-      # emulated_hue_name: "foyer"
-    # switch.gabriels_bathroom_vanity_switch:
-      # emulated_hue_hidden: false
-      # emulated_hue_name: "gabriels bathroom vanity"
-    # switch.gabriels_bathroom_fan_switch:
-      # emulated_hue_hidden: false
-      # emulated_hue_name: "gabriels bathroom fan"
-    # # switch.plugin_light_switch_device:
-      # # friendly_name: "Daniels Closet"
-    # binary_sensor.floorplan:
-      # custom_ui_state_card: state-card-floorplan
-      # config: !include floorplan.yaml
-    # switch.daniels_tv_volume:
-      # emulated_hue_hidden: false
-      # emulated_hue_name: "remote volume"
-    # switch.candle_lights:
-      # emulated_hue_hidden: false
-      # emulated_hue_name: "candles"
+  customize:
+    group.all_lights:
+      hidden: false
+    group.all_switches:
+      hidden: false
+    group.all_devices:
+      hidden: false
+    group.all_scripts:
+      hidden: false
+    group.all_automations:
+      hidden: false
+  packages: !include_dir_named packages/
 
 # Show links to resources in log and frontend
 # introduction:
@@ -56,16 +44,18 @@ cloud:
         - light
         - switch
       exclude_entities:
-        - switch.gabes_room_smart_toggle
+        - switch.gabriels_room_smart_toggle
         # - switch.main_room_smart_toggle
+        - light.living_room
   alexa:
     filter:
       include_domains:
         - light
         - switch
       exclude_entities:
-        - switch.gabes_room_smart_toggle
+        - switch.gabriels_room_smart_toggle
         # - switch.main_room_smart_toggle
+        - light.living_room
 
 http:
   # Uncomment this to add a password (recommended!)
@@ -102,7 +92,7 @@ logbook:
       - device_tracker
       - input_select
     entities:
-      - switch.gabes_room_smart_toggle
+      - switch.gabriels_room_smart_toggle
       - switch.main_room_smart_toggle
       - switch.main_room_smart_toggle
       
@@ -116,27 +106,27 @@ logbook:
       - binary_sensor.kitchen_sensor
       - sensor.kitchen_alarm_level
       - sensor.kitchen_alarm_type
-      - sensor.kitchen_burglar
+      # - sensor.kitchen_burglar
       # - sensor.kitchen_luminance
       # - sensor.kitchen_relative_humidity
       # - sensor.kitchen_temperature
       - sensor.kitchen_sourcenodeid
       - sensor.kitchen_ultraviolet
       
-      - binary_sensor.foyer_sensor
-      - sensor.foyer_alarm_level
-      - sensor.foyer_alarm_type
-      - sensor.foyer_burglar
-      # - sensor.foyer_luminance
-      # - sensor.foyer_relative_humidity
-      # - sensor.foyer_temperature
-      - sensor.foyer_sourcenodeid
-      - sensor.foyer_ultraviolet
+      - binary_sensor.gabriels_bathroom_sensor
+      - sensor.gabriels_bathroom_alarm_level
+      - sensor.gabriels_bathroom_alarm_type
+      # - sensor.gabriels_bathroom_burglar
+      # - sensor.gabriels_bathroom_luminance
+      # - sensor.gabriels_bathroom_relative_humidity
+      # - sensor.gabriels_bathroom_temperature
+      - sensor.gabriels_bathroom_sourcenodeid
+      - sensor.gabriels_bathroom_ultraviolet
       
       - binary_sensor.living_room_sensor
       - sensor.living_room_alarm_level
       - sensor.living_room_alarm_type
-      - sensor.living_room_burglar
+      # - sensor.living_room_burglar
       # - sensor.living_room_luminance
       # - sensor.living_room_relative_humidity
       # - sensor.living_room_temperature
@@ -150,27 +140,42 @@ logbook:
       - automation.mark_person_as_just_left
   include:
     entities:
-      - group.all_lights
+      - group.all_our_lights
       - group.main_room
       - group.living_room
-      - group.gabes_room_all_lights
-      - group.gabes_room
-      - group.gabes_room2
-      - group.gabes_bathroom
+      - group.gabriels_room_all_lights
+      - group.gabriels_room
+      - group.gabriels_room2
+      - group.gabriels_bathroom
       - group.daniels_room
       - group.daniels_room2
 
 logger:
   # default: debug
   default: warn
-  # logs:
-    # homeassistant.components.usps: critical
+  logs:
+    homeassistant.components.sensor.fedex: fatal
+    homeassistant.components.usps: fatal
+    homeassistant.components.sensor.usps: fatal
+    homeassistant.components.media_player.yamaha: error
     # homeassistant.components.camera: critical
     # homeassistant.components.eight_sleep: critical
     # # homeassistant.components.device_tracker: fatal
 
 # Track the sun
 sun:
+
+weather:
+  - platform: darksky
+    api_key: !secret darksky_api_key
+    name: Dark Sky - Hourly
+    mode: hourly
+    units: us
+  - platform: darksky
+    api_key: !secret darksky_api_key
+    name: Dark Sky - Daily
+    mode: daily
+    units: us
 
 recorder:
 
@@ -187,20 +192,35 @@ device_tracker:
     consider_home: 30
     new_device_defaults:
       track_new_devices: False
-    track_new_devices: False
+    # track_new_devices: False
     # port: 80
   # bluetooth - pi must be plugged into ethernet; otherwise, WiFi will interfere and make system REALLY slow/stop
   - platform: bluetooth_tracker
-    new_device_defaults:
-      track_new_devices: False
-    track_new_devices: False
+    # new_device_defaults:
+      # track_new_devices: False
+    # track_new_devices: False
   # - platform: mqtt
     # devices:
-      # bluetooth_gabe: 'bluetooth/presence/gabe_bt'
+      # bluetooth_gabriel: 'bluetooth/presence/gabriel_bt'
       # bluetooth_daniel: 'bluetooth/presence/daniel_bt'
+  # - platform: googlehome
+    # host: 192.168.1.9
+  # - platform: googlehome
+    # host: 192.168.1.13
+  # - platform: googlehome
+    # host: 192.168.1.29
 
 zwave:
   usb_path: /dev/ttyACM0
+  debug: true
+  autoheal: true
+  # device_config:
+    # light.gabriels_bathroom_light:
+      # refresh_value: true
+      # delay: 3
+    # light.daniels_bathroom_light:
+      # refresh_value: true
+      # delay: 3
 
 remote:
   - platform: harmony
@@ -208,67 +228,18 @@ remote:
     host: !secret harmony_host
     scan_interval: 10
 
-# input_boolean:
+input_boolean:
   # door_recently_open:
     # name: Has the door been open in last 5 minutes?
+    # initial: off
+  media_mode:
+    name: Media mode
     # initial: off
 
 input_text:
   leaving_reminder:
     name: Reminder on leaving
     max: 255
-
-input_select:
-  gabe_status_dropdown:
-    name: Gabe
-    options:
-      - Home
-      - Just Arrived
-      - Just Left
-      - Away
-      - Extended Away
-      - unknown
-    initial: Away
-  tash_status_dropdown:
-    name: Tash
-    options:
-      - Home
-      - Just Arrived
-      - Just Left
-      - Away
-      - Extended Away
-      - unknown
-    initial: Away
-  daniel_status_dropdown:
-    name: Daniel
-    options:
-      - Home
-      - Just Arrived
-      - Just Left
-      - Away
-      - Extended Away
-      - unknown
-    initial: Away
-  nata_status_dropdown:
-    name: Nata
-    options:
-      - Home
-      - Just Arrived
-      - Just Left
-      - Away
-      - Extended Away
-      - unknown
-    initial: Away
-  miriam_status_dropdown:
-    name: Miriam
-    options:
-      - Home
-      - Just Arrived
-      - Just Left
-      - Away
-      - Extended Away
-      - unknown
-    initial: Away
 
 sensor:
   - platform: systemmonitor
@@ -283,26 +254,6 @@ sensor:
 # Presence status
   - platform: template
     sensors:
-      gabe_status:
-        value_template: '{{ states.input_select.gabe_status_dropdown.state }}'
-        friendly_name: 'Gabe'
-        entity_id: input_select.gabe_status_dropdown
-      tash_status:
-        value_template: '{{ states.input_select.tash_status_dropdown.state }}'
-        friendly_name: 'Nataliya'
-        entity_id: input_select.tash_status_dropdown
-      daniel_status:
-        value_template: '{{ states.input_select.daniel_status_dropdown.state }}'
-        friendly_name: 'Daniel'
-        entity_id: input_select.daniel_status_dropdown
-      nata_status:
-        value_template: '{{ states.input_select.nata_status_dropdown.state }}'
-        friendly_name: 'Nata'
-        entity_id: input_select.nata_status_dropdown
-      miriam_status:
-        value_template: '{{ states.input_select.miriam_status_dropdown.state }}'
-        friendly_name: 'miriam'
-        entity_id: input_select.miriam_status_dropdown
       door_recently_open:
         value_template: >
           {% if states.timer.door_recently_open_timer.state == 'active' %}
@@ -312,26 +263,39 @@ sensor:
           {% endif %}
         friendly_name: 'Door Timer Status'
         entity_id: timer.door_recently_open_timer
-      occupancy_living_room:
-        friendly_name: 'Living Room Occupied?'
-        entity_id: sensor.living_room_burglar
+      occupancy_gabriels_room:
+        friendly_name: 'Gabriels room occupied?'
+        entity_id: sensor.gabriels_room_burglar
         value_template: >
-          {% if states.sensor.living_room_burglar.state == '8' %}
+          {% if states.sensor.gabriels_room_burglar.state == '8' %}
             true
           {% else %}
             false
           {% endif %}
-      occupancy_foyer:
-        friendly_name: 'Foyer Occupied?'
-        entity_id: sensor.foyer_burglar
+      occupancy_gabriels_bathroom:
+        friendly_name: 'Gabriels bathroom occupied?'
+        entity_id: sensor.gabriels_bathroom_burglar, sensor.gabriels_bathroom_temperature
         value_template: >
-          {% if states.sensor.foyer_burglar.state == '8' %}
+          {% if states.sensor.gabriels_bathroom_burglar.state == '8' %}
+            true
+          {% elif states('sensor.gabriels_bathroom_temperature') | float >= 80 %}
+            true
+          {% else %}
+            false
+          {% endif %}
+      occupancy_daniels_bathroom:
+        friendly_name: 'Daniels bathroom occupied?'
+        entity_id: sensor.daniels_bathroom_burglar, sensor.daniels_bathroom_temperature
+        value_template: >
+          {% if states.sensor.daniels_bathroom_burglar.state == '8' %}
+            true
+          {% elif states('sensor.daniels_bathroom_temperature') | float >= 82 %}
             true
           {% else %}
             false
           {% endif %}
       occupancy_kitchen:
-        friendly_name: 'Kitchen Occupied?'
+        friendly_name: 'Kitchen occupied?'
         entity_id: sensor.kitchen_burglar
         value_template: >
           {% if states.sensor.kitchen_burglar.state == '8' %}
@@ -339,34 +303,111 @@ sensor:
           {% else %}
             false
           {% endif %}
+      occupancy_living_room:
+        friendly_name: 'Living room occupied?'
+        entity_id: sensor.living_room_burglar
+        value_template: >
+          {% if states.sensor.living_room_burglar.state == '8' %}
+            true
+          {% else %}
+            false
+          {% endif %}
+      people_just_arrived:
+        #uses homeassistant.update_entity in packages. make sure to update each one
+        friendly_name: 'People who just arrived'
+        value_template: >
+          {%- for group in states.sensor|groupby('state') -%}
+            {%- for entity in group.list if entity.state == 'Just Arrived' -%}
+              {%- if loop.first -%}
+                {% set output = entity.name %}
+                {{ entity.name }}
+              {%- else -%}
+                {%- if not loop.last -%}
+                  {% set output = output ~ ', ' ~ entity.name %}
+                  {{ ', ' ~ entity.name }}
+                {% else %}
+                  {% set output = output ~ ' and ' ~ entity.name %}
+                  {{ ' and ' ~ entity.name }}
+                {% endif %}
+              {%- endif -%} 
+            {%- endfor -%}
+          {%- endfor -%}
+      people_already_home:
+        #uses homeassistant.update_entity in packages. make sure to update each one
+        friendly_name: 'People who are already home'
+        value_template: >
+          {%- for group in states.sensor|groupby('state') -%}
+            {%- for entity in group.list if entity.state == 'Home' -%}
+              {%- if loop.first -%}
+                {% set output = entity.name %}
+                {{ entity.name }}
+              {%- else -%}
+                {%- if not loop.last -%}
+                  {% set output = output ~ ', ' ~ entity.name %}
+                  {{ ', ' ~ entity.name }}
+                {%- else -%}
+                  {% set output = output ~ ' and ' ~ entity.name %}
+                  {{ ' and ' ~ entity.name }}
+                {%- endif -%}
+              {%- endif -%}
+            {%- endfor -%}
+          {%- endfor -%}
+  - platform: jewish_calendar
+    language: english
+    diaspora: true
+    sensors:
+      - date
+      - weekly_portion
+      - holiday_name
+      - holyness
+      - first_light
+      - gra_end_shma
+      - mga_end_shma
+      - plag_mincha
+      - first_stars
 
-# Weather Prediction
+  # Weather Prediction
   - platform: yr
-# Date and Time
+  
+  # Date and Time
   - platform: time_date
     display_options:
       - 'time_date'
-# Harmony status
+      - 'time'
+      - 'date'
+  
+  # Harmony status
   - platform: template
     sensors:
       harmony:
         value_template: '{{ states.remote.harmony.attributes.current_activity }}'
         friendly_name: 'Harmony Hub'
-# UPS
-  - platform: ups
-    username: !secret ups_username
-    password: !secret ups_password
-# # FedEx
+  
+  # UPS
+  # - platform: ups
+    # username: !secret ups_username
+    # password: !secret ups_password
+  
+  # FedEx
   # - platform: fedex
     # username: !secret fedex_username
     # password: !secret fedex_password
-# update ssl certificate
+  
+  # update ssl certificate
   - platform: command_line
     name: SSL cert expiry
     unit_of_measurement: days
     # scan_interval: 10800
     scan_interval: 60
     command: !secret sslcert_command
+  
+  # Internet speed test
+  - platform: fastdotcom
+    minute:
+      - 0
+      - 15
+      - 30
+      - 45
 
 shell_command: 
   renew_ssl: ~/certbot/certbot-auto renew --quiet --no-self-upgrade --standalone --preferred-challenges http-01
@@ -374,11 +415,18 @@ shell_command:
   # renew_ssl: ~/certbot/certbot-auto renew --quiet --no-self-upgrade --standalone --preferred-challenges tls-sni-01 --tls-sni-01-port 8123 --pre-hook "sudo systemctl stop homeassistant@home-assistant.service" --post-hook "sudo systemctl start homeassistant@home-assistant.service"
 
 # Hue lights
-light:
-  platform: hue
-  host: !secret hue_host
-  # allow_unreachable: true
-  allow_unreachable: false
+hue:
+  bridges:
+    - host: !secret hue_host
+      allow_unreachable: true
+
+# light:
+  # platform: hue
+  # host: !secret hue_host
+  # # allow_unreachable: true
+  # allow_unreachable: false
+
+python_script:
 
 # emulated_hue:
   # host_ip: !secret emulated_hue_host_ip
@@ -434,7 +482,12 @@ media_player:
   - platform: samsungtv
     host: !secret samsungtv_host
     mac: !secret samsungtv_mac
-  - platform: cast
+
+cast:
+  media_player:
+  - host: 192.168.1.9
+  - host: 192.168.1.13
+  - host: 192.168.1.29
 
 notify:
   - platform: pushbullet
@@ -442,10 +495,32 @@ notify:
     api_key: !secret pushbullet_api_key
 
 wemo:
+  static:
+    - 192.168.1.30
+    - 192.168.1.15
+    - 192.168.1.4
+    - 192.168.1.37
+    - 192.168.1.36
+
+google:
+  client_id: !secret google_calendar_client_id
+  client_secret: !secret google_calendar_client_secret
 
 switch:
   - platform: template
     switches:
+      guest_mode_toggle:
+        friendly_name: "Guest Mode"
+        value_template: "{{ is_state('group.non_guest_friendly_automations', 'off') }}"
+        turn_on:
+          service: homeassistant.turn_off
+          data:
+            entity_id: group.non_guest_friendly_automations
+        turn_off:
+          service: homeassistant.turn_on
+          data:
+            entity_id: group.non_guest_friendly_automations
+      
       main_room_smart_toggle:
         friendly_name: "Main Room Smart Toggle"
         value_template: "{{ is_state('group.main_room', 'on') }}"
@@ -457,26 +532,158 @@ switch:
           service: homeassistant.turn_off
           data:
             entity_id: group.main_room
-      gabes_room_smart_toggle:
-        friendly_name: "Gabes Room Smart Toggle"
-        value_template: "{{ is_state('group.gabes_room_all_lights', 'on') }}"
+      gabriels_room_smart_toggle:
+        friendly_name: "Gabriels Room Smart Toggle"
+        value_template: "{{ is_state('group.gabriels_room_all_lights', 'on') }}"
         turn_on:
           service: homeassistant.turn_on
           data:
-            entity_id: group.gabes_room
+            entity_id: group.gabriels_room
         turn_off:
           service: homeassistant.turn_off
           data:
-            entity_id: group.gabes_room_all_lights
+            entity_id: group.gabriels_room_all_lights
       daniels_tv_volume:
         friendly_name: "Daniel's TV Volume"
-        value_template: "{{ is_state('group.gabes_room_all_lights', 'on') }}"
+        value_template: "{{ is_state('group.gabriels_room_all_lights', 'on') }}"
         turn_on:
           service: script.turn_on
           entity_id: script.ir__daniels_tv_volume_up
         turn_off:
           service: script.turn_on
           entity_id: script.ir__daniels_tv_volume_down
+
+
+      harmony_switch:
+        friendly_name: "Nintendo Switch"
+        value_template: "{{ is_state('sensor.harmony', 'Play Switch') }}"
+        turn_on:
+          service: remote.turn_on
+          entity_id: remote.harmony
+          data:
+            activity: "Play Switch"
+        turn_off:
+          service: remote.turn_off
+          entity_id: remote.harmony
+      harmony_wii:
+        friendly_name: "Nintendo Wii"
+        value_template: "{{ is_state('sensor.harmony', 'Play Wii') }}"
+        turn_on:
+          service: remote.turn_on
+          entity_id: remote.harmony
+          data:
+            activity: "Play Wii"
+        turn_off:
+          service: remote.turn_off
+          entity_id: remote.harmony
+      harmony_xbox_one:
+        friendly_name: "Xbox One"
+        value_template: "{{ is_state('sensor.harmony', 'Play Xbox One') }}"
+        turn_on:
+          service: remote.turn_on
+          entity_id: remote.harmony
+          data:
+            activity: "Play Xbox One"
+        turn_off:
+          service: remote.turn_off
+          entity_id: remote.harmony
+      harmony_appletv:
+        friendly_name: "Apple TV"
+        value_template: "{{ is_state('sensor.harmony', 'Watch Apple TV') }}"
+        turn_on:
+          service: remote.turn_on
+          entity_id: remote.harmony
+          data:
+            activity: "Watch Apple TV"
+        turn_off:
+          service: remote.turn_off
+          entity_id: remote.harmony
+      harmony_firestick:
+        friendly_name: "Fire stick"
+        value_template: "{{ is_state('sensor.harmony', 'Watch Fire TV') }}"
+        turn_on:
+          service: remote.turn_on
+          entity_id: remote.harmony
+          data:
+            activity: "Watch Fire TV"
+        turn_off:
+          service: remote.turn_off
+          entity_id: remote.harmony
+      harmony_raspberry_pi:
+        friendly_name: "Raspberry pi"
+        value_template: "{{ is_state('sensor.harmony', 'Raspberry pi') }}"
+        turn_on:
+          service: remote.turn_on
+          entity_id: remote.harmony
+          data:
+            activity: "Raspberry pi"
+        turn_off:
+          service: remote.turn_off
+          entity_id: remote.harmony
+      harmony_volume:
+        friendly_name: "TV Volume"
+        value_template: "off"
+        turn_on:
+          service: remote.send_command
+          data:
+            device: 34961981
+            # 34961981 - Pioneer AV Receiver
+            entity_id: remote.harmony
+            command:
+              - VolumeUp
+            num_repeats: 5
+        turn_off:
+          service: remote.send_command
+          data:
+            device: 34961981
+            # 34961981 - Pioneer AV Receiver
+            entity_id: remote.harmony
+            command:
+              - VolumeDown
+            num_repeats: 5
+      harmony_volume_mute:
+        friendly_name: "TV Volume Mute"
+        value_template: "off"
+        turn_on:
+          service: remote.send_command
+          data:
+            device: 34961981
+            # 34961981 - Pioneer AV Receiver
+            entity_id: remote.harmony
+            command:
+              - Mute
+        turn_off:
+          service: remote.send_command
+          data:
+            device: 34961981
+            # 34961981 - Pioneer AV Receiver
+            entity_id: remote.harmony
+            command:
+              - Mute
+      harmony_pause:
+        friendly_name: "TV Pause/Play"
+        value_template: "off"
+        turn_on:
+          service: remote.send_command
+          data:
+            device: 39797907
+            # 39797907 - firestick
+            entity_id: remote.harmony
+            command:
+              - Pause
+        turn_off:
+          service: remote.send_command
+          data:
+            device: 39797907
+            # 39797907 - firestick
+            entity_id: remote.harmony
+            command:
+              - Play
+
+
+
+
+
   - platform: broadlink
     host: 192.168.1.34
     mac: !secret broadlink_mac
@@ -495,6 +702,28 @@ switch:
         friendly_name: "Candle Lights"
         command_on: 'JgBYAAABLZMTExMSExIUEhMSExMTEhMTEzYUNhM3EzcTNxM3EzYTNxMTExITEhQSExITExMSExMTNhM3EzcTNxM3EzYUNhM3EwAFIAABLUkTAAxZAAEqShEADQU='
         command_off: 'JgBgAAABLZMUEhMSFBITEhQSExITEhQSEzYUNhQ2FDYUNhM2FDYUNhQ2ExIUEhMSFBITEhQRFBITEhQ2FDYTNxM2FDYUNhQ2EwAFIQABLUgUAAxZAAEsSBQADFgAAS1IFAANBQAAAAAAAAAA'
+  # - platform: flux
+    # name: SharedFlux
+    # lights:
+      # - light.hallway
+      # - light.dining_room
+      # - light.living_room_corner
+      # - light.living_room_front
+      # - light.living_room_middle
+      # - light.kitchen
+  # - platform: flux
+    # name: GabrielFlux
+    # lights:
+      # - light.floor_lamp
+      # - light.nightstand
+      # - light.behind_teevee
+      # - light.gabriels_bathroom_light
+  # - platform: flux
+    # name: DanielFlux
+    # lights:
+      # - light.daniels_room_corner
+      # - light.daniels_room_middle
+      # - light.daniels_bathroom_light
 
 # switch:
   # - platform: command_line
@@ -544,12 +773,15 @@ timer:
     duration: '00:10:00'
 
 
-# # USPS - disabled until update in 54.1 (it should be fixed then) - turn on Camera component too - https://github.com/home-assistant/home-assistant/issues/9552
+# USPS - disabled until update in 54.1 (it should be fixed then) - turn on Camera component too - https://github.com/home-assistant/home-assistant/issues/9552
+# https://www.reddit.com/r/homeassistant/comments/80a98w/064_over_1000_integrations_new_homekit_bmw_august/duv6685/
 # usps:
   # username: !secret usps_username
   # password: !secret usps_password
+  # name: 'USPS'
+  # driver: 'phantomjs'
 
-# # USPS - disabled until update in 54.1 (it should be fixed then) - turn on USPS component too - https://github.com/home-assistant/home-assistant/issues/9552
+# USPS - disabled until update in 54.1 (it should be fixed then) - turn on USPS component too - https://github.com/home-assistant/home-assistant/issues/9552
 # camera:
   # - platform: usps
     # scan_interval: 3

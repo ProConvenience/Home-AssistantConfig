@@ -27,19 +27,19 @@
 
 
   tts_test1:
-    alias: _Test TTS - living room dot
+    alias: _Test TTS - living room GH1
     sequence:
       - service: tts.google_say
-        entity_id: media_player.echo0dr
+        entity_id: media_player.living_room_gh_speaker
         data:
-          message: 'May the Force be with you.'
+          message: 'Its time to shower in &... 10 &... 9 &... 8 &... 7 &... 6 &... 5 &... 4 &... 3 &... 2 &... 1 &... 0.'
   tts_test3:
-    alias: _Test TTS - mobi
+    alias: _Test TTS - living room GH2
     sequence:
       - service: tts.google_say
-        entity_id: media_player.mobi_cube
+        entity_id: media_player.living_room_gh_speaker
         data:
-          message: 'May the Force be with you.'
+          message: '<speak>Its time to shower in <break time="2s"/> 10. <break time="2s"/> 9. 8. 7. 6. 5. 4. 3. 2. 1. 0.</speak>'
   pushbullet_test:
     alias: _Pushbullet test
     sequence:
@@ -73,7 +73,7 @@
           # # variables:
             # # var_trigger_entity_id: 'sensor.daniel_status'
       - service: tts.google_say
-        entity_id: media_player.living_room_speaker
+        entity_id: media_player.living_room_gh_speaker
         data_template:
           message: !secret announcement_script
   pushbullet_arrival:
@@ -81,34 +81,9 @@
     sequence:
       - service: notify.pushbullet
         data_template:
+          title: 'Announce arrival'
           message: !secret announcement_script
-          # message: >
-            # {% set vars = {'someone_else_home': False} %}
-            # {%- for group in states.sensor|groupby('state') -%}
-              # {%- for entity in group.list if entity.state == 'Just Arrived' -%}
-                # {{ 'Welcome, ' if loop.first else '' }}
-                # {%- if not loop.first -%} 
-                  # {{ ' and ' if loop.last else ', '}}
-                # {%- endif -%} 
-                # {{ entity.name }}
-                # {%- if loop.last -%}
-                  # {{ '. ' }}
-                # {%- endif -%} 
-              # {%- endfor -%}
-            # {%- endfor -%}
-            # {%- for group in states.sensor|groupby('state') -%}
-              # {%- for entity in group.list if entity.state == 'Home' -%}
-                # {%- if not loop.first -%} 
-                  # {{ ' and ' if loop.last else ', '}}
-                # {%- endif -%} 
-                # {{ entity.name }}
-                # {% if vars.update({'someone_else_home': True}) %} {% endif %}
-                # {%- if loop.last -%} 
-                  # {{ ' is also here. ' if loop.first else ' are also here. ' }}
-                # {%- endif -%} 
-              # {%- endfor -%}
-            # {%- endfor -%}
-            # {% if not vars.someone_else_home %}I don't see anyone else here.{% endif %}
+
   pushbullet_arrival2:
     alias: _Pushbullet arrival2
     sequence:
@@ -141,7 +116,7 @@
     alias: _Announce arrival2
     sequence:
       - service: tts.google_say
-        entity_id: media_player.living_room_speaker
+        entity_id: media_player.living_room_gh_speaker
         data_template:
           message: >
             {% for group in states.sensor|groupby('state') %}
@@ -170,21 +145,25 @@
     alias: _Announce arrival
     sequence:
       - service: tts.google_say
-        entity_id: group.google_homes
+        # entity_id: group.google_homes
+        # entity_id: media_player.main_room_group
+        # entity_id: media_player.kitchen_gh_speaker
+        entity_id: media_player.living_room_gh_speaker
+        # entity_id: media_player.all_devices
         data_template:
           message: !secret announcement_script
       # - service: media_player.volume_set
-        # entity_id: media_player.living_room_speaker
+        # entity_id: media_player.living_room_gh_speaker
         # data:
           # volume_level: 0.5
       # - service: tts.google_say
-        # entity_id: media_player.living_room_speaker
+        # entity_id: media_player.living_room_gh_speaker
         # data_template:
           # message: !secret announcement_script
       # # - delay:
           # # seconds: 10
       # # - service: media_player.volume_set
-        # # entity_id: media_player.living_room_speaker
+        # # entity_id: media_player.living_room_gh_speaker
         # # data:
           # # volume_level: 0.75
 
@@ -193,27 +172,27 @@
     alias: Reminder on door open
     sequence:
       - service: media_player.volume_set
-        entity_id: media_player.kitchen_speaker
+        entity_id: media_player.kitchen_gh_speaker
         data:
           volume_level: 0.4
       - service: tts.google_say
-        entity_id: media_player.kitchen_speaker
+        entity_id: media_player.kitchen_gh_speaker
         data_template:
           message: '{{ states.input_text.leaving_reminder.state }}'
       - service: switch.turn_on
-        entity_id: switch.foyer_switch
+        entity_id: switch.hallway
       - delay:
           seconds: 0.5
       - service: switch.turn_off
-        entity_id: switch.foyer_switch
+        entity_id: switch.hallway
       - delay:
           seconds: 0.5
       - service: switch.turn_on
-        entity_id: switch.foyer_switch
+        entity_id: switch.hallway
       - delay:
           seconds: 10
       - service: media_player.volume_set
-        entity_id: media_player.kitchen_speaker
+        entity_id: media_player.kitchen_gh_speaker
         data:
           volume_level: 0.75
 

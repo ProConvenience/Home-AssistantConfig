@@ -17,12 +17,12 @@
       entities:
         # - name: Cohabitants
           # entities:
-            # - group.gabe
+            # - group.gabriel
             # - group.daniel
-            # - group.tash
+            # - group.gabriels_partner
             # - device_tracker.gabrielysiphone
             # - device_tracker.gabriel_saslafskys_iphone
-            # - device_tracker.nataliyasiphone
+            # - device_tracker.partnersphone
             # - device_tracker.danielsiphone
           # # text_template: '${entity.state ? entity.state.replace("not_home", "away") : "undefined"}'
           # states:
@@ -43,9 +43,9 @@
 
         - name: Cohabitants
           entities:
-            - group.gabe
+            - group.gabriel
             - group.daniel
-            - group.tash
+            - group.gabriels_partner
           text_template: '${entity.state ? entity.state.replace("not_home", "away") : "undefined"}'
           states:
             - state: 'home'
@@ -58,7 +58,7 @@
         # - name: Room Buttons
           # entities:
             # - switch.main_room_smart_toggle
-            # - switch.gabes_room_smart_toggle
+            # - switch.gabriels_room_smart_toggle
             # # - switch.daniels_room_smart_toggle
           # states:
             # - state: 'on'
@@ -94,7 +94,7 @@
             - light.daniels_room_middle
             - light.living_room_corner
             - light.living_room_middle
-            - light.dining_room_light_level
+            - light.dining_room
             - light.behind_teevee
             - light.floor_lamp
             - light.nightstand
@@ -109,14 +109,14 @@
             - switch.daniels_bathroom
             - switch.daniels_closet
             - switch.daniels_tv
-            - switch.foyer_switch
+            - switch.hallway
             - switch.gabriels_bathroom_fan_switch
             - switch.gabriels_bathroom_vanity_switch
             - switch.gabriels_closet
             - switch.kitchen
             
             - switch.main_room_smart_toggle
-            - switch.gabes_room_smart_toggle
+            - switch.gabriels_room_smart_toggle
           states:
             - state: 'on'
               class: 'doorbell-on'
